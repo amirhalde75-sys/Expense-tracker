@@ -1,22 +1,64 @@
-# Expense Tracker
+import json
 
-A simple Python command-line program to track expenses.
+FILE_NAME = "expenses.json"
 
-## Features
-- Add an expense with an amount and a category (e.g. Food, Travel)
-- View all expenses
-- See the total for each category
-- Data is saved in `expenses.json`, so it is loaded again after restarting
-- Wrong input (like "abc" as amount) does not crash the program
+def load_expenses():
+    try:
+        with open(FILE_NAME, "r") as f:
+            return json.load(f)
+    except (FileNotFoundError, json.JSONDecodeError, OSError):
+        return []
 
-## How to run
-1. Install Python 3
-2. Run: `python expense_tracker.py`
-3. Choose an option from the menu (1 to 4)
+def save_expenses(expenses):
+    with open(FILE_NAME, "w") as f:
+        json.dump(expenses, f, indent=4)
 
-## Functions
-- `load_expenses()`: reads expenses from expenses.json
-- `save_expenses()`: writes expenses to expenses.json
-- `add_expense()`: asks amount and category, adds and saves it
-- `view_expenses()`: prints all expenses
-- `category_total()`: prints total for each category
+def add_expense(expenses):
+    try:
+        amount = float(input("Enter amount: "))
+    except ValueError:
+        print("Invalid amount. Number daalo.")
+        return
+    category = input("Enter category (Food/Travel): ").strip().title()
+    expenses.append({"amount": amount, "category": category})
+    save_expenses(expenses)
+    print("Expense added and saved!")
+
+def view_expenses(expenses):
+    if not expenses:
+        print("No expenses yet.")
+        return
+    for i, e in enumerate(expenses, 1):
+        print(f"{i}. {e['category']} - {e['amount']}")
+
+def category_total(expenses):
+    if not expenses:
+        print("No expenses yet.")
+        return
+    totals = {}
+    for e in expenses:
+        totals[e["category"]] = totals.get(e["category"], 0) + e["amount"]
+    for cat, total in totals.items():
+        print(f"{cat}: {total}")
+
+expenses = load_expenses()
+
+while True:
+    print("\n--- Expense Tracker ---")
+    print("1. Add Expense")
+    print("2. View Expenses")
+    print("3. Category Total")
+    print("4. Exit")
+    choice = input("Choose option: ")
+
+    if choice == "1":
+        add_expense(expenses)
+    elif choice == "2":
+        view_expenses(expenses)
+    elif choice == "3":
+        category_total(expenses)
+    elif choice == "4":
+        print("Goodbye!")
+        break
+    else:
+        print("Invalid option.")
